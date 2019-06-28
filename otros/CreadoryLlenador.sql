@@ -169,7 +169,7 @@ CREATE TABLE Semana
     diaSemana INT NOT NULL,
     tipo VARCHAR(5), /*En qué consiste ese turno. Teoría, Contraturno*/
 
-    PRIMARY KEY(idHorario),
+    PRIMARY KEY(idSemana),
     FOREIGN KEY(idDivision) REFERENCES Division(idDivision)
 );
 CREATE TABLE Asistencia
