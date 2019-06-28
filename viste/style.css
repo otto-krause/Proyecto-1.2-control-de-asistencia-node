@@ -5,6 +5,7 @@ h1
     color: whitesmoke;
     text-align: center;
 }
+
 p
 {
     letter-spacing: 1px;
@@ -12,14 +13,41 @@ p
     color:white;
     text-align: center;
 }
+
 html
 {
     background-color: deepskyblue;
 }
+
 form
 {
     text-align:center;
 }
+
+h2
+{
+    float: left;
+}
+th, td
+{
+    border: 10px solid black;
+}
+#cabecera
+{
+    border-color : black;
+    border: 30px;
+}
+
+#indiceValores
+{
+    float:right;
+}
+
+#cosas
+{
+    float:right;
+}
+
 #ingreso
 {
     color:white;

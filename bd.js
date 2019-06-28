@@ -4,8 +4,8 @@ var pool = mysql.createPool({
     connectionLimit: 30,
     host : 'localhost',
     user : 'root',
-    password : '',
-    database : 'BD_Proyecto1_1'
+    password : 'password',
+    database : 'Proyecto1_2'
 })
 
 pool.getConnection((err,conexion)=>
