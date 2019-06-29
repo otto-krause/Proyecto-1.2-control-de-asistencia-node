@@ -1,21 +1,20 @@
 var express = require('express');
 var pool = require('./bd.js').pool;
 var bodyparser = require('body-parser');
-var urlencodedParser = bodyparser.urlencoded({extended: false});
 var app = express();
 var consultas = require('./consultas.js').consultas;
 
-app.use(express.static(__dirname + '/viste'));
+app.use(bodyparser.urlencoded({extended: false}));
+app.use(express.static(__dirname + '/vistas'));
 app.use(bodyparser.json());
-app.get('/home', (req,res)=>
+app.get(['/home', '/'], (req,res)=>
 {
-    console.log(consultas);
-    res.sendFile(__dirname + '/viste/home.html');
+    res.sendFile(__dirname + '/vistas/home.html');
 });
 
 app.get('/Alumno/:id',(req,res)=>
 {
-    pool.query(consultas.mostrarAlumno, req.params.id , (err, result) => {
+    pool.query("SELECT * FROM Alumno WHERE Alumno.idAlumno = ?;", req.params.id , (err, result) => {
             if (err) throw err;
             if (result[0] != null)
             {
@@ -31,15 +30,26 @@ app.get('/Alumno/:id',(req,res)=>
 });
 app.get('/TomarLista', (req,res)=>
 {
-    console.log(consultas);
-    res.sendFile(__dirname + '/viste/tomarLista.html');
+    res.sendFile(__dirname + '/vistas/tomarLista.html');
 });
 
-app.post('/Agregar', urlencodedParser, (req,res)=>
+app.post('/Agregar', (req,res)=>
 {
-    console.log(req.body);
+    var sql = "INSERT INTO Proyecto1_2.Asistencia (idAlumno, idSemana, valor, fecha) VALUES (" + req.body.idAlumno + "," + req.body.idSemana + ",'" + req.body.valor + "','"+ req.body.fecha +"');";
+    pool.query(sql, (err,res)=>{
+        if(err) throw err;
+        console.log("I'm in");
+    });
+    res.sendFile(__dirname + "/vistas/exito.html");
 });
-
+app.get('/Mostrar', (req,res)=>
+{
+    res.sendFile(__dirname+'/vistas/mostrar.html');
+}); 
+app.get('/No', (req,res)=>
+{
+    res.sendFile(__dirname + "/vistas/no.html");
+});
 
 app.listen(3000);
 console.log('El server está vivo.');

@@ -167,17 +167,18 @@ CREATE TABLE Semana
     idDivision INT NOT NULL,
     idSemana INT NOT NULL AUTO_INCREMENT,
     diaSemana INT NOT NULL,
-    tipo VARCHAR(5), /*En qué consiste ese turno. Teoría, Contraturno*/
+    tipo VARCHAR(15), /*En qué consiste ese turno. Teoría, Contraturno*/
 
-    PRIMARY KEY(idHorario),
+    PRIMARY KEY(idSemana),
     FOREIGN KEY(idDivision) REFERENCES Division(idDivision)
 );
 CREATE TABLE Asistencia
 (
     idAsistencia INT NOT NULL AUTO_INCREMENT,
+    idSemana INT NOT NULL,
     idAlumno INT NOT NULL,
     valor VARCHAR(3) NOT NULL, /*El valor de la asistencia. Presente, Tarde, Austende con Permanencia, Justificado, Otro*/
-	fecha DATE NOT NULL,
+  	fecha DATE NOT NULL,
 
     PRIMARY KEY(idAsistencia),
     FOREIGN KEY(idAlumno) REFERENCES Alumno(idAlumno),
@@ -199,6 +200,8 @@ INSERT INTO Roles (rol) VALUES
 ("Profesor"),
 ("Preceptor");
 
+
+
 INSERT INTO Autoridades VALUES 
 ('1','21919065','1120170312','2908 Kali Lodge','Tina','Jenkins','2002-08-21','1974-06-18','Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras venenatis faucibus turpis, nec gravida diam scelerisque a. Pellentesque ornare eros vitae purus tempus porta.'),
 ('2','30650300','1157976040','58926 William Heights Apt. 015','Stan','Hane','2009-08-07','1971-12-22','Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras venenatis faucibus turpis, nec gravida diam scelerisque a. Pellentesque ornare eros vitae purus tempus porta.'),
@@ -210,3 +213,30 @@ INSERT INTO Autoridades VALUES
 ('8','36426663','1133903751','5158 Borer Villages Apt. 883','Rhea','Christiansen','2015-03-06','1982-11-16','Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras venenatis faucibus turpis, nec gravida diam scelerisque a. Pellentesque ornare eros vitae purus tempus porta.'),
 ('9','37184023','1150723651','695 Mohr Cape','Bernadette','Kuhlman','2018-06-11','1986-05-21','Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras venenatis faucibus turpis, nec gravida diam scelerisque a. Pellentesque ornare eros vitae purus tempus porta.'),
 ('10','35006292','1137957715','5879 Faustino Highway','Wiley','Lang','1987-09-14','1994-09-14','Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras venenatis faucibus turpis, nec gravida diam scelerisque a. Pellentesque ornare eros vitae purus tempus porta.'); 
+
+INSERT INTO Division(idPreceptor,especialidad,año,turno,numDivision,cicloLectivo) VALUES
+(1,'Computación', 6, 'Tarde', 1, 2019),
+(1,'Computación', 5, 'Tarde', 2, 2019),
+(1,'Química', 6, 'Mañana', 1, 2019),
+(1,'Computación', 6, 'Mañana', 2, 2019),
+(1,'Electrónica', 6, 'Tarde', 3, 2019),
+(1,'Electrónica', 4, 'Mañana', 1, 2019),
+(1,'Energías Renovables', 6, 'Mañana', 1, 2019),
+(1,'Mecánica', 6, 'Tarde', 2, 2019),
+(1,'Construcciones', 6, 'Mañana', 1, 2019);
+
+INSERT INTO Semana(diaSemana, tipo, idDivision) VALUES
+(1,'Teoría',1),
+(2,'Teoría',1),
+(2,'Contraturno',1),
+(3,'Teoría',1),
+(4,'Teoría',1),
+(4,'Contraturno',1),
+(5,'Teoría',1),
+(5,'Contraturno',1),
+(1,'Teoría',2),
+(1,'Contraturno',2),
+(2,'Teoría',2),
+(3,'Teoría',2),
+(4,'Teoría',2),
+(5,'Contraturno',2);
