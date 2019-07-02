@@ -174,10 +174,9 @@ CREATE TABLE Semana
 );
 CREATE TABLE Asistencia
 (
+    idSemana INT NOT NULL,
     idAsistencia INT NOT NULL AUTO_INCREMENT,
-    idSemana INT NOT NULL,
     idAlumno INT NOT NULL,
-    idSemana INT NOT NULL,
     valor VARCHAR(3) NOT NULL, /*El valor de la asistencia. Presente, Tarde, Austende con Permanencia, Justificado, Otro*/
   	fecha DATE NOT NULL,
 
