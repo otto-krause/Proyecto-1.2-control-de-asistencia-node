@@ -14,20 +14,32 @@ app.get(['/home', '/'], (req,res)=>
 
 app.get('/Alumno/:id',(req,res)=>
 {
-    pool.query("SELECT * FROM Alumno WHERE Alumno.idAlumno = ?;", req.params.id , (err, result) => {
+    var resultado;
+    resultado = pool.query("SELECT * FROM Alumno WHERE Alumno.idAlumno = ?;", req.params.id , (err, result) => {
             if (err) throw err;
-            if (result[0] != null)
-            {
-                console.log(result);
-                res.send(result);
-            }
-            else
+            if (result[0] == null)
             {
                 console.log("No");
                 res.send("No hay valores en la base de datos para ese id");
             }
     })
+    res.send(resultado);
 });
+
+app.get('/ListaAlumnos', (req,res)=>
+{
+    var consulta = "SELECT idAlumno AS ID, nombre AS Nombre, apellido AS Apellido FROM Alumno";
+    pool.query(consulta, (err, rows) =>
+    {
+        if(err)
+        {
+            throw err;
+        }
+        res.json(rows);
+    });
+});
+
+
 app.get('/TomarLista', (req,res)=>
 {
     res.sendFile(__dirname + '/vistas/tomarLista.html');
