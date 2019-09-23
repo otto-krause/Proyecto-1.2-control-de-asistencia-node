@@ -5,7 +5,7 @@ var pool = mysql.createPool({
     host : 'localhost',
     user : 'root',
     password : '',
-    database : 'Proyecto1_2'
+    database : 'Escuela'
 })
 
 pool.getConnection((err,conexion)=>
