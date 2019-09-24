@@ -5,7 +5,7 @@ var app = express();
 var autenticacion = require('./autenticacion');
 
 var AutoridadDivision = 'CREATE VIEW Profesores_Division AS SELECT dniAutoridad, usuario, idDivision, tomarLista FROM Cursada JOIN Autoridades ON (dniProfesor = dniAutoridad);'; //Divisiones con Autoridades
-var PreceptoresDivision = 'CREATE VIEW Preceptores_Division AS SELECT dniPreceptor, usuario, idDivision, tomarlista FROM Division JOIN Autoridades ON (Division.dniPreceptor = Autoridades.dniAutoridad)';
+var PreceptoresDivision = 'CREATE VIEW Preceptores_Division AS SELECT dniPreceptor, usuario, idDivision FROM Division JOIN Autoridades ON (Division.dniPreceptor = Autoridades.dniAutoridad)';
 const corsConfig = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://localhost:8080')
     res.header('Access-Control-Allow-Credentials', true)
