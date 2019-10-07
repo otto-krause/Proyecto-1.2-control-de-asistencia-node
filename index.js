@@ -18,12 +18,8 @@ app.use(corsConfig);
 app.use(bodyparser.urlencoded({extended: false}));
 app.use(express.static(__dirname + '/vistas'));
 app.use(bodyparser.json());
-app.get(['/home', '/'], (req,res)=>
-{
-    res.sendFile(__dirname + '/vistas/home.html');
-});
 
-app.get('/ObtenerCursos', (req,res)=>
+app.get('/ObtenerCursos', async (req,res, next)=>
 {
     var usuarioAutoridad = 'Lorem';
     var SacarDivisionesDeXAutoridad = 'SELECT DISTINCT * FROM (SELECT B.usuario, A.idDivision, CONCAT(año," ",especialidad," ",numDivision) AS Division FROM Division AS A JOIN Profesores_Division AS B ON (A.idDivision = B.idDivision) WHERE B.tomarLista = 1) AS C UNION SELECT * FROM (SELECT E.usuario, D.idDivision, CONCAT(año," ",especialidad," ",numDivision) AS Division FROM Division AS D JOIN Preceptores_Division AS E ON (D.idDivision = E.idDivision)) AS F WHERE usuario = ' + "'" +usuarioAutoridad + "'" + ';'; //Divisiones donde la Autoridad es la seleccionada.
@@ -38,10 +34,25 @@ app.get('/ObtenerCursos', (req,res)=>
 
 
 });
-app.get('/ListaAlumnos/:IdDivision', (req,res)=>
+
+app.get('/ObtenerSemSistencia/:idDivision/:diaSemana', async (req,res, next)=>
 {
-    console.log("Alguien entró con el id " + req.params.IdDivision);
-    var consulta = "SELECT Alumno.dniAlumno AS DNI, nombre AS Nombre, apellido AS Apellido FROM Alumno JOIN Historial_Alumno ON (Alumno.dniAlumno = Historial_Alumno.dniAlumno) WHERE (idDivision = " + req.params.IdDivision+");";
+    var consulta = "SELECT idSemana, tipo as turno, idDivision FROM Semana WHERE (Semana.idDivision = " + req.params.idDivision + " AND Semana.diaSemana = (SELECT DAYOFWEEK('" + req.params.diaSemana + "')));";
+    console.log(consulta);
+    pool.query(consulta,(err,rows) =>
+    {
+        if(err)
+        {
+            throw err;
+        }
+        res.json(rows);
+    })
+});
+
+app.get('/ListaAlumnos/:IdDivision', async (req,res,next)=>
+{
+    console.log("Alguien quiere la lista de alumnos de la division con el id " + req.params.IdDivision);
+    var consulta = "SELECT Alumno.dniAlumno AS dniAlumno, nombre AS Nombre, apellido AS Apellido FROM Alumno JOIN Historial_Alumno ON (Alumno.dniAlumno = Historial_Alumno.dniAlumno) WHERE (idDivision = " + req.params.IdDivision+");";
     pool.query(consulta, (err, rows) =>
     {
         if(err)
@@ -52,7 +63,7 @@ app.get('/ListaAlumnos/:IdDivision', (req,res)=>
     });
 });
 
-app.post('/Agregar', (req,res)=>
+app.post('/Agregar', async (req,res, next)=>
 {
     var sql = "INSERT INTO Proyecto1_2.Asistencia (dniAlumno, idSemana, valor, fecha) VALUES (" + req.body.dniAlumno + "," + req.body.idSemana + ",'" + req.body.valor + "','"+ req.body.fecha +"');";
     pool.query(sql, (err,res)=>{
@@ -61,6 +72,6 @@ app.post('/Agregar', (req,res)=>
     });
     res.sendFile(__dirname + "/vistas/exito.html");
 });
-
+    
 app.listen(3000);
 console.log('El server está vivo.');

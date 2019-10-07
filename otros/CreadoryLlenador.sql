@@ -1,22 +1,17 @@
-DROP DATABASE IF EXISTS Escuela;
+DROP DATABASE IF EXISTS BD_Proyecto1_1;
 
-CREATE DATABASE Escuela;
+CREATE DATABASE BD_Proyecto1_1;
 
-USE Escuela;
+USE BD_Proyecto1_1;
 
 CREATE TABLE Materia(
   idMateria INT NOT NULL AUTO_INCREMENT,
   titulo VARCHAR(50) NOT NULL,
   descripcion VARCHAR(256),
   cantHoras TINYINT NOT NULL,
+  activo BOOLEAN NOT NULL DEFAULT 1,
+  fechaBaja DATE,
   PRIMARY KEY (idMateria)
-);
-
-CREATE TABLE Dia_Horario(
-  idHorario INT NOT NULL AUTO_INCREMENT,
-  dia TINYINT NOT NULL, 
-  entradaSalida INT NOT NULL,
-  PRIMARY KEY (idHorario)
 );
 
 CREATE TABLE Autoridades(
@@ -25,12 +20,21 @@ CREATE TABLE Autoridades(
   direccion VARCHAR(100),
   nombre VARCHAR(50) NOT NULL,
   apellido VARCHAR(50) NOT NULL,
-  fechaIngreso DATE NULL,
   fechaNacimiento DATE,
   fichaMedica BOOLEAN NOT NULL DEFAULT 0,
-  usuario VARCHAR(50) NOT NULL,
-  contraseña VARCHAR(50) NOT NULL,
+  activo BOOLEAN NOT NULL DEFAULT 1,
+  usuario VARCHAR(50),
+  contraseña VARCHAR(50),
   PRIMARY KEY (dniAutoridad)
+);
+
+CREATE TABLE Fechas_Activo_Autoridad(
+  idFecha INT AUTO_INCREMENT,
+  dniAutoridad INT NOT NULL,
+  fechaAlta DATE NOT NULL,
+  fechaBaja DATE,
+  PRIMARY KEY (idFecha),
+  FOREIGN KEY(dniAutoridad) REFERENCES Autoridades(dniAutoridad)
 );
 
 CREATE TABLE Roles (
@@ -38,6 +42,13 @@ CREATE TABLE Roles (
   rol VARCHAR(100),
   PRIMARY KEY (idRol)
 );
+
+INSERT INTO roles(idRol, rol) VALUES (1,'Preceptor');
+INSERT INTO roles(idRol, rol) VALUES (2,'Profesor');
+INSERT INTO roles(idRol, rol) VALUES (3,'Coordinador');
+INSERT INTO roles(idRol, rol) VALUES (4,'M.E.P');
+INSERT INTO roles(idRol, rol) VALUES (5,'Vicerector');
+INSERT INTO roles(idRol, rol) VALUES (6,'Rector');
 
 CREATE TABLE Autoridades_Roles (
   dniAutoridad INT NOT NULL,
@@ -55,6 +66,8 @@ CREATE TABLE Division(
   turno BOOLEAN NOT NULL,
   numDivision TINYINT NOT NULL,
   cicloLectivo SMALLINT NOT NULL,
+  activo BOOLEAN NOT NULL DEFAULT 1,
+  fechaBaja DATE,
   PRIMARY KEY (idDivision),
   FOREIGN KEY(dniPreceptor) REFERENCES Autoridades(dniAutoridad),
   UNIQUE(especialidad,año,turno,numDivision,cicloLectivo)
@@ -62,16 +75,26 @@ CREATE TABLE Division(
 
 CREATE TABLE Cursada(
   idCursada INT NOT NULL AUTO_INCREMENT,
-  idHorario INT NOT NULL,
   idDivision INT NOT NULL,
   idMateria INT NOT NULL,
   dniProfesor INT NOT NULL,
   tomarLista BOOLEAN NOT NULL,
   PRIMARY KEY (idCursada),
   FOREIGN KEY(idMateria) REFERENCES Materia(idMateria),
-  FOREIGN KEY(idHorario) REFERENCES Dia_Horario(idHorario),
   FOREIGN KEY(idDivision) REFERENCES Division(idDivision),
-  FOREIGN KEY(dniProfesor) REFERENCES Autoridades(dniAutoridad)
+  FOREIGN KEY(dniProfesor) REFERENCES Autoridades(dniAutoridad),
+  UNIQUE(idDivision,idMateria)
+);
+
+CREATE TABLE Dia_Horario(
+  idHorario INT NOT NULL AUTO_INCREMENT,
+  idCursada INT NOT NULL,
+  dia TINYINT NOT NULL,
+  entrada TIME NOT NULL,
+  salida TIME NOT NULL, 
+  PRIMARY KEY (idHorario),
+  FOREIGN KEY(idCursada) REFERENCES Cursada(idCursada),
+  UNIQUE(dia,entrada,salida)
 );
 
 CREATE TABLE Alumno(
@@ -82,10 +105,17 @@ CREATE TABLE Alumno(
   apellido VARCHAR(50) NOT NULL,
   repetidor BOOLEAN NOT NULL DEFAULT 0,
   fechaNacimiento DATE,
-  fechaIngreso DATE NOT NULL,
   activo BOOLEAN NOT NULL DEFAULT 1,
-  fechaBaja DATE NULL,
   PRIMARY KEY (dniAlumno)
+);
+
+CREATE TABLE Fechas_Activo_Alumno(
+  idFecha INT AUTO_INCREMENT,
+  dniAlumno INT NOT NULL,
+  fechaAlta DATE NOT NULL,
+  fechaBaja DATE,
+  PRIMARY KEY (idFecha),
+  FOREIGN KEY(dniAlumno) REFERENCES Alumno(dniAlumno)
 );
 
 CREATE TABLE Contacto_Alumno(
@@ -115,7 +145,7 @@ CREATE TABLE Acta_Cursada(
 
 CREATE TABLE Acta_Previa(
   idActa INT NOT NULL AUTO_INCREMENT,
-  idMateria INT NOT NULL,
+  idMateria INT NOT NULL, 
   tipo VARCHAR(100),
   fechaCierre DATE,
   PRIMARY KEY (idActa),
@@ -149,6 +179,8 @@ CREATE TABLE Alumno_Adeuda (
 CREATE TABLE Historial_Alumno (
   idDivision INT NOT NULL,
   dniAlumno INT NOT NULL,
+  motivoBaja VARCHAR(100),
+  activo BOOLEAN NOT NULL DEFAULT 1, 
   PRIMARY KEY(idDivision,dniAlumno),
   FOREIGN KEY(idDivision) REFERENCES Division(idDivision),
   FOREIGN KEY(dniAlumno) REFERENCES Alumno(dniAlumno)
@@ -170,42 +202,49 @@ CREATE TABLE Plan_Materia (
   FOREIGN KEY(idMateria) REFERENCES Materia(idMateria)
 );
 
-CREATE TABLE Semana
-(
+CREATE TABLE Semana(
     idDivision INT NOT NULL,
     idSemana INT NOT NULL AUTO_INCREMENT,
     diaSemana INT NOT NULL,
     tipo VARCHAR(15), /*En qué consiste ese turno. Teoría, Contraturno*/
-
     PRIMARY KEY(idSemana),
     FOREIGN KEY(idDivision) REFERENCES Division(idDivision)
 );
-CREATE TABLE Asistencia
-(
+
+CREATE TABLE Asistencia(
     idSemana INT NOT NULL,
     idAsistencia INT NOT NULL AUTO_INCREMENT,
     dniAlumno INT NOT NULL,
-    valor VARCHAR(3) NOT NULL, /*El valor de la asistencia. Presente, Tarde, Austende con Permanencia, Justificado, Otro*/
-  	fecha DATE NOT NULL,
-
+    valor VARCHAR(3) NOT NULL,
+    fecha DATE NOT NULL,
     PRIMARY KEY(idAsistencia),
     FOREIGN KEY(dniAlumno) REFERENCES Alumno(dniAlumno),
     FOREIGN KEY(idSemana) REFERENCES Semana(idSemana)
 );
-INSERT INTO Alumno (dniAlumno, telefono, direccion, nombre, apellido, repetidor, fechaNacimiento, fechaIngreso) VALUES
-(43181089, 1131265287, "Casa de Franco", "Franco", "Mercado", 0, '2001-02-14', '2014-02-28'),
-(42175858, 1148444448, "Arroyos 3", "Fernando", "Cotti", 0, '2000-11-19', '2014-02-28'),
-(42468444, 1149882153, "casa de Maikhol", "Maikhol", "Sozaki", 1, '2001-02-14', '2014-02-28'),
-(44311848, 1143311111, "Calle 46546", "Ocnarf", "Odacrem", 0, '2001-02-14', '2014-02-28'),
-(43854561, 1179797979, "Puente 12412", "Barreto", "Barret", 0, '2001-02-14', '2014-02-28'),
-(40684625, 1143897513, "Casa del puente 23424", "Lola", "Merás", 0, '2001-02-14', '2014-02-28'),
-(34874652, 1179222312, "uwu 12451", "Juancho", "Tito", 0, '2001-02-14', '2014-02-28'),
-(40184984, 1126484949, "Subeestudinatil 79797", "Blas", "Grudina", 1, '1994-02-14', '2014-02-28'),
-(42486468, 1133363386, "Av de Mayo 977987", "Kirito", "Uchihaxd", 0, '2001-02-14', '2014-02-28');
+
+Use bd_proyecto1_1;
+
+INSERT INTO Alumno (dniAlumno, telefono, direccion, nombre, apellido, repetidor, fechaNacimiento, activo) VALUES
+(43181089, 1131265287, "Casa de Franco", "Franco", "Mercado", 0, '2001-02-14', true ),
+(42175858, 1148444448, "Arroyos 3", "Fernando", "Cotti", 0, '2000-11-19', true ),
+(42468444, 1149882153, "casa de Maikhol", "Maikhol", "Sozaki", 1, '2001-02-14', true ),
+(44311848, 1143311111, "Calle 46546", "Ocnarf", "Odacrem", 0, '2001-02-14', true),
+(43854561, 1179797979, "Puente 12412", "Barreto", "Barret", 0, '2001-02-14', true),
+(40684625, 1143897513, "Casa del puente 23424", "Lola", "Merás", 0, '2001-02-14', false ),
+(34874652, 1179222312, "uwu 12451", "Juancho", "Tito", 0, '2001-02-14', false ),
+(40184984, 1126484949, "Subeestudinatil 79797", "Blas", "Grudina", 1, '1994-02-14', false ),
+(42486468, 1133363386, "Av de Mayo 977987", "Kirito", "Uchihaxd", 0, '2001-02-14', true );
 
 INSERT INTO Roles (rol) VALUES
 ("Profesor"),
 ("Preceptor");
+
+INSERT INTO Materia (titulo, descripcion, cantHoras) VALUES
+('Matemática 1', 'Es Matemática, pero 1', 3),
+('Matemática 2', 'Es Matemática, pero 2', 3),
+('Desarrollo de Sistemas', 'Es Hid.', 6),
+('Lengua y Literatura', 'Es Lengua, pero literatura', 2),
+('Tecnología de la Representación', 'Es hacer dibujitos', 3);
 
 INSERT INTO Autoridades VALUES 
 ('21919065','1120170312','2908 Kali Lodge','Tina','Jenkins','2002-08-21','1974-06-18',1,'jenkin.tina', 'uwuowoewe'),
@@ -246,25 +285,18 @@ INSERT INTO Semana(diaSemana, tipo, idDivision) VALUES
 (4,'Teoría',2),
 (5,'Contraturno',2);
 
-INSERT INTO Dia_Horario (dia, entradaSalida) VALUES
-(1,13251620),
-(2,14101750),
-(3,08001130);
+INSERT INTO Cursada(idDivision, idMateria, dniProfesor, tomarLista) VALUES
+(1,1,21919065,0),
+(1,2,21919065,0),
+(1,3,27212129,1),
+(3,1,27212129,1),
+(2,1,27212129,1);
 
+INSERT INTO Dia_Horario (dia, entrada, salida, idCursada) VALUES
+(1,'07:30:00','11:30:00', 1 ),
+(2,'07:30:00','11:30:00', 2),
+(3,'07:30:00','11:30:00', 3 );
 
-INSERT INTO Materia (titulo, descripcion, cantHoras) VALUES
-('Matemática 1', 'Es Matemática, pero 1', 3),
-('Matemática 2', 'Es Matemática, pero 2', 3),
-('Desarrollo de Sistemas', 'Es Hid.', 6),
-('Lengua y Literatura', 'Es Lengua, pero literatura', 2),
-('Tecnología de la Representación', 'Es hacer dibujitos', 3);
-
-INSERT INTO Cursada(idHorario, idDivision, idMateria, dniProfesor, tomarLista) VALUES
-(1,1,1,21919065,0),
-(2,1,2,21919065,0),
-(3,1,3,27212129,1),
-(2,1,1,27212129,1),
-(1,2,1,27212129,1);
 
 INSERT INTO Historial_Alumno(idDivision,dniAlumno) VALUES
 (1,43181089),
@@ -277,3 +309,6 @@ INSERT INTO Historial_Alumno(idDivision,dniAlumno) VALUES
 (6,40184984),
 (7,42486468);
 
+CREATE VIEW Profesores_Division AS SELECT dniAutoridad, usuario, idDivision, tomarLista FROM Cursada JOIN Autoridades ON (dniProfesor = dniAutoridad);
+
+CREATE VIEW Preceptores_Division AS SELECT dniPreceptor, usuario, idDivision FROM Division JOIN Autoridades ON (Division.dniPreceptor = Autoridades.dniAutoridad);
