@@ -7,7 +7,7 @@ var autenticacion = require('./autenticacion');
 var AutoridadDivision = 'CREATE VIEW Profesores_Division AS SELECT dniAutoridad, usuario, idDivision, tomarLista FROM Cursada JOIN Autoridades ON (dniProfesor = dniAutoridad);'; //Divisiones con Autoridades
 var PreceptoresDivision = 'CREATE VIEW Preceptores_Division AS SELECT dniPreceptor, usuario, idDivision FROM Division JOIN Autoridades ON (Division.dniPreceptor = Autoridades.dniAutoridad)';
 const corsConfig = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:8080')
+    res.header('Access-Control-Allow-Origin', 'http://localhost:8081')
     res.header('Access-Control-Allow-Credentials', true)
     res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT')
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
@@ -31,8 +31,6 @@ app.get('/ObtenerCursos', async (req,res, next)=>
         }
         res.json(rows);
     })
-
-
 });
 
 app.get('/ObtenerSemSistencia/:idDivision/:diaSemana', async (req,res, next)=>
@@ -49,10 +47,10 @@ app.get('/ObtenerSemSistencia/:idDivision/:diaSemana', async (req,res, next)=>
     })
 });
 
-app.get('/ListaAlumnos/:IdDivision', async (req,res,next)=>
+app.get('/ListaAlumnos/', async (req,res,next)=>
 {
     console.log("Alguien quiere la lista de alumnos de la division con el id " + req.params.IdDivision);
-    var consulta = "SELECT Alumno.dniAlumno AS dniAlumno, nombre AS Nombre, apellido AS Apellido FROM Alumno JOIN Historial_Alumno ON (Alumno.dniAlumno = Historial_Alumno.dniAlumno) WHERE (idDivision = " + req.params.IdDivision+");";
+    var consulta = "SELECT CONCAT(año,' ',especialidad,' ',numDivision) AS Division, A.idDivision as idDivision, dniAlumno, Nombre, Apellido FROM (SELECT C.dniAlumno AS dniAlumno, nombre AS Nombre, apellido AS Apellido, idDivision AS idDivision FROM Alumno AS C JOIN Historial_Alumno ON (C.dniAlumno = Historial_Alumno.dniAlumno)) AS A JOIN Division ON (Division.idDivision = A.idDivision);";
     pool.query(consulta, (err, rows) =>
     {
         if(err)
@@ -72,6 +70,6 @@ app.post('/Agregar', async (req,res, next)=>
     });
     res.sendFile(__dirname + "/vistas/exito.html");
 });
-    
-app.listen(3000);
+
+app.listen(3001);
 console.log('El server está vivo.');
